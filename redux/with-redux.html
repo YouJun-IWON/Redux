@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.2.1/redux.js"></script>
+    <!-- https://cdnjs.com/libraries/redux => 서버에 저장하지 않고 redux를 적용하는 방법 -->
+
+</head>
+    <body>
+        <style>
+            .container{
+                border:5px solid black;
+                padding: 10px;
+            }
+        </style>
+        <!-- 상태를 중앙 집중적으로 관리 -->
+        <div id = "red"></div>
+        <div id = "blue"></div>
+        <div id = "green"></div>
+        <script>
+            function reducer(state, action) {
+                console.log(state, action);
+
+                if(state === undefined){ // 초기값 단계
+                    return{color: 'yellow'} // 초기 컬러 설정이 가능해진다. 
+                }
+                // if(action.type === 'CHANGE_COLOR'){
+                //     state.color = 'red';
+                // } 이렇게도 state 값을 바꿀 수 있지만 보통 이렇게 하지 않는다. redux의 장점을 온전히 누릴 수 없다.(시간 여행, undo/redo)
+                // state 값을 변경해서 return 하는 것이 아닌 state를 복사하고, 이 복제된 state를 수정한 다음 return한다.
+                // Object.assign({}, {name:'egoing'}, {city:'seoul'});
+                // => {name:'egoing'}, {city:'seoul'} => 이를 활용한다.
+
+                var newState;
+                if(action.type === 'CHANGE_COLOR'){
+                    newState = Object.assign({}, state, {color:action.color});
+                    // 각각의 state값이 보존된다.
+                    console.log(action.type, action, state, newState); // store의 현 상태에 대한 정보를 가져올 수 있다.
+                }
+                // return {color:'red'}
+                return newState;
+            // 이전 state와 action을 받아서 다음의 state 값을 반환한다.
+            }
+            Redux.createStore(reducer);
+            
+            var store = Redux.createStore(
+                reducer,
+                window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+                // chrome redux extention을 위해 위의 코드 입력
+            );
+            console.log(store.getState());
+
+            function red() {
+                var state = store.getState();
+                document.querySelector('#red').innerHTML = `
+                    <div class="container" id="component_red" style="background-color:${state.color}">
+                        <h1>red</h1> 
+                        <input type="button" value="fire" onclick="
+                            store.dispatch({type:'CHANGE_COLOR', color:'red'});
+                        ">
+                    </div>
+                `;
+            }
+            store.subscribe(red); // store에 구독시켜놓으면 state가 바뀔 때마다 자신의 모습을 바꿀 수 있다.
+            // 다른 component들에 대한 코드를 신경쓸 필요가 없다. 이거 함수 하나만 따로 구현할 수 있다. 
+            // redux를 사용하여 decoupling 한다. 서로의 의존성을 낮춘다. 
+            red();
+         
+            function blue() {
+                var state = store.getState();
+                document.querySelector('#blue').innerHTML = `
+                    <div class="container" id="component_blue" style="background-color:${state.color}">
+                        <h1>blue</h1> 
+                        <input type="button" value="fire" onclick="
+                            store.dispatch({type:'CHANGE_COLOR', color:'blue'});
+                        ">
+                    </div>
+                `;
+            }
+            store.subscribe(blue);
+            blue();
+            
+            function green() {
+                var state = store.getState();
+                document.querySelector('#green').innerHTML = `
+                    <div class="container" id="component_green" style="background-color:${state.color}">
+                        <h1>green</h1> 
+                        <input type="button" value="fire" onclick="
+                            store.dispatch({type:'CHANGE_COLOR', color:'green'});
+                        ">
+                    </div>
+                `;
+            }
+            store.subscribe(green);
+            green();
+        </script>
+    </body>
+</html>
